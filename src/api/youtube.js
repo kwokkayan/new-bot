@@ -1,4 +1,3 @@
-const { ytBufferSize } = require('../config');
 const ytdl = require('@distube/ytdl-core');
 
 const createAudioStream = async (url) => {
@@ -12,7 +11,7 @@ const createAudioStream = async (url) => {
   });
   return ytdl(url, {
     format,
-    highWaterMark: ytBufferSize
+    highWaterMark: 1 << 62,
   });
 }
 

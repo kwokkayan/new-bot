@@ -48,11 +48,7 @@ module.exports = {
       player.play(resource);
       connection.subscribe(player);
       // Send reply
-      await interaction.reply({ embeds: [getPlayerEmbed(audio)(0, 1)] });
-      stream.on("progress", async (chunkLen, bytesDown, totalBytes) => {
-        log.info(chunkLen, bytesDown, totalBytes)
-        await interaction.editReply({ embeds: [getPlayerEmbed(audio)(bytesDown, totalBytes)] })
-      })
+      await interaction.reply({ embeds: [getPlayerEmbed(audio)] });
     } catch (err) {
       log.warn(err)
       await interaction.reply({
