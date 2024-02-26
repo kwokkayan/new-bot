@@ -4,9 +4,10 @@ const {
   demuxProbe,
   createAudioResource,
 } = require('@discordjs/voice');
-const { player } = require("../../api/player");
+const { getAudioPlayerByGuildId } = require("../../api/player");
 const { createAudioStream, getAudioInfo } = require("../../api/youtube");
 const { getPlayerEmbed } = require("../../embeds/player");
+const { getQueueCardEmbed } = require("../../embeds/queueCard");
 const { log } = require("../../config");
 
 async function probeAndCreateResource(readableStream) {
@@ -45,10 +46,19 @@ module.exports = {
       });
       // Set audio resource
       const resource = await probeAndCreateResource(stream);
-      player.play(resource);
-      connection.subscribe(player);
-      // Send reply
-      await interaction.reply({ embeds: [getPlayerEmbed(audio)] });
+      const player = getAudioPlayerByGuildId(user.guild.id);
+      // store audio info, stream resource, and text channel for output
+      player.queue.push({ audio, resource, channel: interaction.channel });
+      let embed = undefined;
+      if (player.queue.length == 1) {
+        player.play(resource);
+        connection.subscribe(player);
+        embed = { embeds: [getPlayerEmbed(audio)] };
+      } else {
+        embed = { embeds: [getQueueCardEmbed(audio)] };
+      }
+      // send reply
+      await interaction.reply(embed);
     } catch (err) {
       log.warn(err)
       await interaction.reply({

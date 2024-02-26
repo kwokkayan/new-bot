@@ -1,12 +1,10 @@
 const { EmbedBuilder } = require('discord.js');
 
-const getPlayerEmbed = (info) => {
+const getQueueCardEmbed = (info) => {
   const {
     title,
     author,
-    description,
     video_url,
-    thumbnails
   } = info;
 
   const {
@@ -18,13 +16,12 @@ const getPlayerEmbed = (info) => {
 
   return new EmbedBuilder()
     .setColor(0x0099FF)
-    .setTitle(title !== null ? title : "❌")
+    .setTitle(`Added ${title !== null ? title : "❌"} to queue`)
     .setURL(video_url)
     .setAuthor({ name: name, iconURL: authorThumbnail[0].url, url: user_url })
-    .setImage(thumbnails[thumbnails.length - 1].url)
-    .setDescription(description !== null ? `${description.substr(0, 50)}...` : "❌")
     .setTimestamp()
 }
+
 module.exports = {
-  getPlayerEmbed
+  getQueueCardEmbed
 };
