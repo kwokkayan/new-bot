@@ -3,10 +3,13 @@ import arithListener from "../parser/arithListener.js"
 import arithLexer from "../parser/arithLexer.js"
 import arithParser from "../parser/arithParser.js"
 import arithVisitor from "../parser/arithVisitor.js"
-import {log} from "../config.js";
+import { log } from "../config.js";
 
 const memory = new Map();
-
+/**
+ * @param {string} s 
+ * @returns {string}
+ */
 export const interpret = (s) => {
   const chars = new antlr4.InputStream(s);
   const lexer = new arithLexer(chars);
@@ -27,144 +30,235 @@ class Visitor extends arithVisitor {
 
   // Visit a parse tree produced by arithParser#prog.
   visitProg(ctx) {
-    const left = JSON.stringify(this.visit(ctx.stmt()));
+    const left = JSON.stringify(this.visit(ctx.stmt()).value);
     if (ctx.prog() === null)
       return left;
-    const right = this.visit(ctx.prog());
+    const right = this.visit(ctx.prog()).value;
     return `${left}\n${right}`;
   }
 
-	// Visit a parse tree produced by arithParser#funcBody.
-	visitFuncBody(ctx) {
-	  return this.visitChildren(ctx);
-	}
+  /**
+   * 
+   * @param {*} ctx 
+   * @returns {{value: any, type: string}}
+   */
+  // Visit a parse tree produced by arithParser#funcBody.
+  visitFuncBody(ctx) {
+    return this.visitChildren(ctx);
+  }
 
-
-	// Visit a parse tree produced by arithParser#assStmt.
-	visitAssStmt(ctx) {
-	  const left = ctx.getChild(0).getText();
+  /**
+   * 
+   * @param {*} ctx 
+   * @returns {{value: any, type: string}}
+   */
+  // Visit a parse tree produced by arithParser#assStmt.
+  visitAssStmt(ctx) {
+    const left = ctx.getChild(0).getText();
     const right = this.visit(ctx.right);
     memory.set(left, right);
     return right;
-	}
+  }
 
+  /**
+   * 
+   * @param {*} ctx 
+   * @returns {{value: any, type: string}}
+   */
+  // Visit a parse tree produced by arithParser#assfStmt.
+  visitAssfStmt(ctx) {
+    return this.visitChildren(ctx);
+  }
 
-	// Visit a parse tree produced by arithParser#assfStmt.
-	visitAssfStmt(ctx) {
-	  return this.visitChildren(ctx);
-	}
+  /**
+   * 
+   * @param {*} ctx 
+   * @returns {{value: any, type: string}}
+   */
+  // Visit a parse tree produced by arithParser#unAssStmt.
+  visitUnAssStmt(ctx) {
+    return this.visitChildren(ctx);
+  }
 
-	// Visit a parse tree produced by arithParser#unAssStmt.
-	visitUnAssStmt(ctx) {
-	  return this.visitChildren(ctx);
-	}
+  /**
+   * 
+   * @param {*} ctx 
+   * @returns {{value: any, type: string}}
+   */
+  // Visit a parse tree produced by arithParser#exprStmt.
+  visitExprStmt(ctx) {
+    return this.visit(ctx.expr());
+  }
 
-	// Visit a parse tree produced by arithParser#exprStmt.
-	visitExprStmt(ctx) {
-	  return this.visit(ctx.expr());
-	}
+  /**
+   * 
+   * @param {*} ctx 
+   * @returns {{value: any, type: string}}
+   */
+  // Visit a parse tree produced by arithParser#pureFunc.
+  visitPureFunc(ctx) {
+    return this.visitChildren(ctx);
+  }
 
-	// Visit a parse tree produced by arithParser#pureFunc.
-	visitPureFunc(ctx) {
-	  return this.visitChildren(ctx);
-	}
+  /**
+   * 
+   * @param {*} ctx 
+   * @returns {{value: any, type: string}}
+   */
+  // Visit a parse tree produced by arithParser#unpureFunc.
+  visitUnpureFunc(ctx) {
+    return this.visitChildren(ctx);
+  }
 
+  /**
+   * 
+   * @param {*} ctx 
+   * @returns {{value: any, type: string}}
+   */
+  // Visit a parse tree produced by arithParser#arglist.
+  visitArglist(ctx) {
+    return this.visitChildren(ctx);
+  }
 
-	// Visit a parse tree produced by arithParser#unpureFunc.
-	visitUnpureFunc(ctx) {
-	  return this.visitChildren(ctx);
-	}
+  /**
+   * 
+   * @param {*} ctx 
+   * @returns {{value: any, type: string}}
+   */
+  // Visit a parse tree produced by arithParser#arrayExpr.
+  visitArrayExpr(ctx) {
+    return this.visit(ctx.array());
+  }
 
-
-	// Visit a parse tree produced by arithParser#arglist.
-	visitArglist(ctx) {
-	  return this.visitChildren(ctx);
-	}
-
-	// Visit a parse tree produced by arithParser#arrayExpr.
-	visitArrayExpr(ctx) {
-	  return this.visit(ctx.array());
-	}
-
+  /**
+   * 
+   * @param {*} ctx 
+   * @returns {{value: any, type: string}}
+   */
   // Visit a parse tree produced by arithParser#opExpr.
   visitBOpExpr(ctx) {
     const left = this.visit(ctx.left);
     const right = this.visit(ctx.right);
-    // TODO: check array type...
     const op = ctx.getChild(1).getText();
+    // TODO: add matrix operations
+    let out = { value: null, type: "num" }
     switch (op) {
-      case '*': return left * right;
-      case '/': return left / right;
-      case '+': return left + right;
-      case '-': return left - right;
-      case '>=': return (left >= right) + 0;
-      case '<=': return (left <= right) + 0;
-      case '>': return (left > right) + 0;
-      case '<': return (left < right) + 0;
-      case '==': return (left === right) + 0; // strict eq coz js is cringe
-      case '!=': return (left !== right) + 0;
-      case '&&': return (left && right) + 0;
-      case '||': return (left || right) + 0;
+      case '*': out.value = left * right; break;
+      case '/': out.value = left / right; break;
+      case '+': out.value = left + right; break;
+      case '-': out.value = left - right; break;
+      case '>=': out.value = (left >= right) + 0; break;
+      case '<=': out.value = (left <= right) + 0; break;
+      case '>': out.value = (left > right) + 0; break;
+      case '<': out.value = (left < right) + 0; break;
+      case '==': out.value = (left === right) + 0; break; // strict eq coz js is cringe
+      case '!=': out.value = (left !== right) + 0; break;
+      case '&&': out.value = (left && right) + 0; break;
+      case '||': out.value = (left || right) + 0; break;
       default: throw new Error("undefined operator")
     }
+    return out;
   }
 
-	// Visit a parse tree produced by arithParser#uOpExpr.
-	visitUOpExpr(ctx) {
+  /**
+   * 
+   * @param {*} ctx 
+   * @returns {{value: any, type: string}}
+   */
+  // Visit a parse tree produced by arithParser#uOpExpr.
+  visitUOpExpr(ctx) {
     const left = this.visit(ctx.expr());
     const op = ctx.getChild(0).getText();
+    let out = { value: null, type: "num" }
     switch (op) {
-      case '!': return (!left) + 0;
-      case '-': return -left;
+      case '!': out.value = (!left) + 0; break;
+      case '-': out.value = -left; break;
       default: throw new Error("undefined operator")
     }
-	}
+    return out;
+  }
 
+  /**
+   * 
+   * @param {*} ctx 
+   * @returns {{value: any, type: string}}
+   */
   // Visit a parse tree produced by arithParser#ifExpr.
-	visitIfExpr(ctx) {
-    const cond = this.visit(ctx.cond);
-    if (cond)
+  visitIfExpr(ctx) {
+    const { value } = this.visit(ctx.cond);
+    if (value)
       return this.visit(ctx.t);
     else
       return this.visit(ctx.f);
-	}
+  }
 
+  /**
+   * 
+   * @param {*} ctx 
+   * @returns {{value: any, type: string}}
+   */
   // Visit a parse tree produced by arithParser#atomExpr.
   visitAtomExpr(ctx) {
     return this.visit(ctx.atom());
   }
 
-
+  /**
+   * 
+   * @param {*} ctx 
+   * @returns {{value: any, type: string}}
+   */
   // Visit a parse tree produced by arithParser#parenExpr.
   visitParenExpr(ctx) {
     return this.visit(ctx.expr());
   }
 
-	// Visit a parse tree produced by arithParser#oneDimArr.
-	visitArrDecl(ctx) {
+  /**
+   * 
+   * @param {*} ctx 
+   * @returns {{value: any, type: string}}
+   */
+  // Visit a parse tree produced by arithParser#oneDimArr.
+  visitArrDecl(ctx) {
     const zeroOrOne = ctx.zo;
     const one = ctx.o;
     const mul = ctx.mul;
     if (zeroOrOne === null && one === null) {
       return [];
     } else if (one === null) {
-      return [ this.visit(zeroOrOne) ];
+      const { value } = this.visit(zeroOrOne);
+      return [value];
     } else {
-      return [ this.visit(one) ].concat(this.visit(mul));
+      const fst = this.visit(one);
+      const snd = this.visit(mul);
+      return [fst.value].concat(snd.value);
     }
-	}
+  }
 
+  /**
+   * 
+   * @param {*} ctx 
+   * @returns {{value: any, type: string}}
+   */
   // Visit a parse tree produced by arithParser#atomInt.
   visitAtomInt(ctx) {
     return parseInt(ctx.getText());
   }
 
-
+  /**
+   * 
+   * @param {*} ctx 
+   * @returns {{value: any, type: string}}
+   */
   // Visit a parse tree produced by arithParser#atomFloat.
   visitAtomFloat(ctx) {
     return parseFloat(ctx.getText());
   }
 
+  /**
+   * 
+   * @param {*} ctx 
+   * @returns {{value: any, type: string}}
+   */
   // Visit a parse tree produced by arithParser#atomVar.
   visitAtomVar(ctx) {
     if (memory.has(ctx.getText())) {

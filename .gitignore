@@ -4,3 +4,5 @@ package-lock.json
 src/api/models/*.gguf
 src/parser
 src/grammer/.antlr
+.vscode
+dist

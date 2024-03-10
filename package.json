@@ -1,5 +1,6 @@
 {
   "scripts": {
+    "type": "tsc",
     "dev": "nodemon index.js | pino-pretty"
   },
   "type": "module",
@@ -16,6 +17,7 @@
     "pino": "^8.19.0"
   },
   "devDependencies": {
-    "eslint": "^8.56.0"
+    "eslint": "^8.56.0",
+    "typescript": "^5.4.2"
   }
 }
