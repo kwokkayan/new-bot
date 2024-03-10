@@ -10,6 +10,6 @@ export const data = new SlashCommandBuilder()
     .setRequired(true)
   );
 export async function execute(interaction) {
-  const num = interpret(interaction.options.getString("expression"));
-  await interaction.reply(`${num}`);
+  const out = interpret(interaction.options.getString("expression"));
+  await interaction.reply(`${out}`);
 }
