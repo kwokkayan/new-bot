@@ -1,10 +1,8 @@
-const { Events } = require('discord.js');
-const { log } = require("../config");
+import { Events } from 'discord.js';
+import { log } from "../config.js";
 
-module.exports = {
-  name: Events.ClientReady,
-  once: true,
-  execute(client) {
-    log.info(`Ready! Logged in as ${client.user.tag}`);
-  },
-};
+export const name = Events.ClientReady;
+export const once = true;
+export function execute(client) {
+  log.info(`Ready! Logged in as ${client.user.tag}`);
+}

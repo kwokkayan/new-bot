@@ -1,11 +1,12 @@
-const ytdl = require('@distube/ytdl-core');
+import ytdl from '@distube/ytdl-core';
+const { validateURL, getInfo, filterFormats, chooseFormat } = ytdl;
 
-const createAudioStream = async (url) => {
-  if (!ytdl.validateURL(url)) return undefined;
+export const createAudioStream = async (url) => {
+  if (!validateURL(url)) return undefined;
 
-  let info = await ytdl.getInfo(url);
-  let audioFormats = ytdl.filterFormats(info.formats, 'audioonly');
-  let format = ytdl.chooseFormat(audioFormats, {
+  let info = await getInfo(url);
+  let audioFormats = filterFormats(info.formats, 'audioonly');
+  let format = chooseFormat(audioFormats, {
     quality: "highestaudio",
     filter: f => f.container === "webm",
   });
@@ -15,15 +16,10 @@ const createAudioStream = async (url) => {
   });
 }
 
-const getAudioInfo = async (url) => {
-  if (!ytdl.validateURL(url)) return undefined;
-  let info = await ytdl.getInfo(url);
+export const getAudioInfo = async (url) => {
+  if (!validateURL(url)) return undefined;
+  let info = await getInfo(url);
   return {
     ...info.videoDetails
   }
-}
-
-module.exports = {
-  createAudioStream,
-  getAudioInfo
 }

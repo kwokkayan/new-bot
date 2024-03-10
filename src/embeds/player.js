@@ -1,6 +1,6 @@
-const { EmbedBuilder } = require('discord.js');
+import { EmbedBuilder } from 'discord.js';
 
-const getPlayerEmbed = (info) => {
+export const getPlayerEmbed = (info) => {
   const {
     title,
     author,
@@ -25,6 +25,3 @@ const getPlayerEmbed = (info) => {
     .setDescription(description !== null ? `${description.substr(0, 50)}...` : "❌")
     .setTimestamp()
 }
-module.exports = {
-  getPlayerEmbed
-};

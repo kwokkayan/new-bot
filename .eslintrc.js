@@ -1,7 +1,7 @@
 module.exports = {
     "env": {
-        "browser": true,
-        "commonjs": true,
+        "browser": false,
+        "commonjs": false,
         "es2021": true
     },
     "extends": "eslint:recommended",
@@ -14,13 +14,14 @@ module.exports = {
                 ".eslintrc.{js,cjs}"
             ],
             "parserOptions": {
-                "sourceType": "script"
+                "sourceType": "module"
             }
         }
     ],
     "parserOptions": {
-        "ecmaVersion": "latest"
+        "ecmaVersion": "latest",
+        "sourceType": "module"
     },
     "rules": {
-    }
+    },
 }

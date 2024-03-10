@@ -1,6 +1,6 @@
-const { EmbedBuilder } = require('discord.js');
+import { EmbedBuilder } from 'discord.js';
 
-const getQueueCardEmbed = (info) => {
+export const getQueueCardEmbed = (info) => {
   const {
     title,
     author,
@@ -21,7 +21,3 @@ const getQueueCardEmbed = (info) => {
     .setAuthor({ name: name, iconURL: authorThumbnail[0].url, url: user_url })
     .setTimestamp()
 }
-
-module.exports = {
-  getQueueCardEmbed
-};

@@ -3,3 +3,8 @@ services:
     build: .
     env_file:
       - .env
+    volumes:
+      - llama:/usr/app/new-bot/src/api/models
+volumes:
+  llama:
+    external: true

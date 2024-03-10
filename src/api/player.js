@@ -1,15 +1,10 @@
-
-const {
-  createAudioPlayer,
-  NoSubscriberBehavior,
-  AudioPlayerStatus
-} = require('@discordjs/voice');
-const { Collection } = require('discord.js');
-const { log } = require("../config");
-const { getPlayerEmbed } = require("../embeds/player");
+import { createAudioPlayer, NoSubscriberBehavior, AudioPlayerStatus } from '@discordjs/voice';
+import { Collection } from 'discord.js';
+import { log } from "../config.js";
+import { getPlayerEmbed } from "../embeds/player.js";
 const players = new Collection();
 
-const getAudioPlayerByGuildId = (id) => {
+export const getAudioPlayerByGuildId = (id) => {
   let player = players.get(id);
   if (player !== undefined) {
     return player;
@@ -41,8 +36,4 @@ const getAudioPlayerByGuildId = (id) => {
 
   players.set(id, player);
   return player
-}
-
-module.exports = {
-  getAudioPlayerByGuildId
 }

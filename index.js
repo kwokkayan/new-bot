@@ -1,9 +1,11 @@
-const { token, appId, guildId, log } = require("./src/config");
-const fs = require('node:fs');
-const path = require('node:path');
+import { log, config } from "./src/config.js";
+import { readdirSync } from 'node:fs';
+import { join } from 'node:path';
+import {fileURLToPath} from "url";
+import path from "path";
 // Require the necessary discord.js classes
-const { Client, Collection, GatewayIntentBits, REST, Routes } = require('discord.js');
-
+import { Client, Collection, GatewayIntentBits, REST, Routes } from 'discord.js';
+const { token, appId, guildId } = config
 // Create a new client instance
 const client = new Client({
   intents: [
@@ -14,16 +16,16 @@ const client = new Client({
 client.commands = new Collection();
 const commands = []
 
-// eslint-disable-next-line no-undef
-const foldersPath = path.join(__dirname, 'src/commands');
-const commandFolders = fs.readdirSync(foldersPath);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const foldersPath = join(__dirname, 'src/commands');
+const commandFolders = readdirSync(foldersPath);
 
 for (const folder of commandFolders) {
-  const commandsPath = path.join(foldersPath, folder);
-  const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+  const commandsPath = join(foldersPath, folder);
+  const commandFiles = readdirSync(commandsPath).filter(file => file.endsWith('.js'));
   for (const file of commandFiles) {
-    const filePath = path.join(commandsPath, file);
-    const command = require(filePath);
+    const filePath = join(`file://${commandsPath}`, file);
+    const command = await import(filePath);
     // Set a new item in the Collection with the key as the command name and the value as the exported module
     if ('data' in command && 'execute' in command) {
       commands.push(command.data.toJSON());
@@ -35,12 +37,12 @@ for (const folder of commandFolders) {
 }
 
 // eslint-disable-next-line no-undef
-const eventsPath = path.join(__dirname, 'src/events');
-const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'));
+const eventsPath = join(__dirname, 'src/events');
+const eventFiles = readdirSync(eventsPath).filter(file => file.endsWith('.js'));
 
 for (const file of eventFiles) {
-  const filePath = path.join(eventsPath, file);
-  const event = require(filePath);
+  const filePath = join(`file://${eventsPath}`, file);
+  const event = await import(filePath);
   if (event.once) {
     client.once(event.name, (...args) => event.execute(...args));
   } else {
@@ -73,6 +75,6 @@ const deployCommands = (async () => {
 deployCommands();
 client.login(token);
 
-const { generateDependencyReport } = require('@discordjs/voice');
+import { generateDependencyReport } from '@discordjs/voice';
 
 log.info(generateDependencyReport());

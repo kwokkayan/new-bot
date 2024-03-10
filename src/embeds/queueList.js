@@ -1,6 +1,6 @@
-const { EmbedBuilder } = require('discord.js');
-const { getEmptyQueueEmbed } = require('./emptyQueue');
-const getQueueListEmbed = (queue) => {
+import { EmbedBuilder } from 'discord.js';
+import { getEmptyQueueEmbed} from './emptyQueue.js';
+export const getQueueListEmbed = (queue) => {
   if (queue.length == 0) {
     return getEmptyQueueEmbed();
   }
@@ -25,7 +25,3 @@ const getQueueListEmbed = (queue) => {
 
   return embed;
 }
-
-module.exports = {
-  getQueueListEmbed
-};

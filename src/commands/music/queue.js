@@ -1,13 +1,11 @@
-const { SlashCommandBuilder } = require('discord.js');
-const { getAudioPlayerByGuildId } = require("../../api/player");
-const { getQueueListEmbed } = require("../../embeds/queueList");
-module.exports = {
-  data: new SlashCommandBuilder()
-    .setName('queue')
-    .setDescription('shows current music queue'),
-  async execute(interaction) {
-    const user = interaction.member;
-    const player = getAudioPlayerByGuildId(user.guild.id);
-    await interaction.reply({ embeds: [getQueueListEmbed(player.queue)] });
-  },
-};
+import { SlashCommandBuilder } from 'discord.js';
+import { getAudioPlayerByGuildId } from "../../api/player.js";
+import { getQueueListEmbed } from "../../embeds/queueList.js";
+export const data = new SlashCommandBuilder()
+  .setName('queue')
+  .setDescription('shows current music queue');
+export async function execute(interaction) {
+  const user = interaction.member;
+  const player = getAudioPlayerByGuildId(user.guild.id);
+  await interaction.reply({ embeds: [getQueueListEmbed(player.queue)] });
+}

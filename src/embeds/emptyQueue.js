@@ -1,12 +1,8 @@
-const { EmbedBuilder } = require('discord.js');
+import { EmbedBuilder } from 'discord.js';
 
-const getEmptyQueueEmbed = () => {
+export const getEmptyQueueEmbed = () => {
   return new EmbedBuilder()
     .setColor(0x0099FF)
     .setTitle(`Empty Queue`)
     .setTimestamp()
 }
-
-module.exports = {
-  getEmptyQueueEmbed
-};
