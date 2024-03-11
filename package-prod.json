@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "dev": "nodemon index.js | pino-pretty"
+    "dev": "node index.js | pino-pretty"
   },
   "type": "module",
   "dependencies": {
