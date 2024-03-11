@@ -2,11 +2,11 @@ import { spawn } from 'node:child_process';
 import { createVideoStream } from "./youtube.js";
 import { log } from '../config.js';
 import sharp from 'sharp';
+import { Writable } from 'node:stream';
+
 export const getFrameBuffersFromVideo = async (url, fps, width, height) => {
   const videoStream = await createVideoStream(url);
   if (videoStream === undefined) return undefined;
-  log.info("stream created")
-  log.info(videoStream)
   const luminance = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1{}[]?-_+~<>i!lI;:,\"^'. ".split('').reverse().join('');
   const ffmpeg = spawn('ffmpeg', [
     '-i',
@@ -19,39 +19,62 @@ export const getFrameBuffersFromVideo = async (url, fps, width, height) => {
     'png',
     'pipe:1',
   ]);
+  /**
+   * TODO: parse the chunks before passing to sharp (check for png header and so on...) 
+   */
+  class PngToRawStream extends Writable {
+    buffers = [];
+    constructor(opt) {
+      super(opt);
+      // ...
+    }
+
+    _final(callback) {
+      callback();
+    }
+
+    _writev(chunks, callback) {
+      chunks.map(({ chunk, encoding }) => {
+        sharp(chunk).resize(width, height).greyscale().raw().toBuffer((err, data, info) => {
+          if (data !== undefined)
+            this.buffers.push(data);
+        });
+      })
+      callback();
+    }
+
+    _write(chunk, encoding, callback) {
+      sharp(chunk).resize(width, height).greyscale().raw().toBuffer((err, data, info) => {
+        if (data !== undefined)
+          this.buffers.push(data);
+      });
+      callback();
+    }
+  }
+
+  const pngToRawStream = new PngToRawStream();
 
   videoStream.pipe(ffmpeg.stdin);
+  ffmpeg.stdout.pipe(pngToRawStream);
 
   ffmpeg.stderr.on("data", (data) => {
     log.error(`${data.toString()}`)
   })
 
-  const getFrames = async () => {
-    return new Promise((resolve, reject) => {
-      const _buf = [];
-      ffmpeg.stdout.on("data",
-        (chunk) => _buf.push(chunk)
-      );
-      ffmpeg.stdout.on("end", () =>
-        resolve(
-          _buf.map(
-            async (b) => {
-              try {
-                return Array.from(await sharp(b).resize(width, height).greyscale().raw().toBuffer())
-                  .map((v) => luminance[Math.floor((v / 255) * (luminance.length - 1))])
-                  .reduce((acc, curr, i) => (i > 0 && i % width === 0) ? `${acc}\n${curr}` : `${acc}${curr}`)
-              } catch {
-                const widthline = `${"".padEnd(width, luminance[0])}\n`;
-                const emptyFrame = `${"".padEnd(width * height, widthline)}`;
-                return emptyFrame;
-              }
-            }
-          )
+  return new Promise((resolve, reject) => {
+    pngToRawStream.on("finish", async () => {
+      const buffers = pngToRawStream.buffers;
+      resolve(
+        buffers.map(
+          (b) => Array.from(b)
+            .map((v) => luminance[Math.floor((v / 255) * (luminance.length - 1))])
+            .reduce((acc, curr, i) => (i > 0 && i % width === 0) ? `${acc}\n${curr}` : `${acc}${curr}`)
         )
       );
-      ffmpeg.stdout.on("error", (err) => reject(err));
+    });
+    pngToRawStream.on('error', () => {
+      reject([])
     })
-  }
-  const frames = await Promise.all(await getFrames());
-  return frames
+  });
+
 }

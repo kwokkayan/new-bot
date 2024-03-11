@@ -1,6 +1,10 @@
 import { SlashCommandBuilder } from 'discord.js';
 import { getFrameBuffersFromVideo } from '../../api/badapple.js';
 import { log } from '../../config.js';
+import {
+  setTimeout,
+} from 'timers/promises';
+
 export const data = new SlashCommandBuilder()
   .setName('badapple')
   .setDescription('badapple')
@@ -40,11 +44,11 @@ export async function execute(interaction) {
     const url = interaction.options.getString("url");
     const frames = await getFrameBuffersFromVideo(url, fps, width, height);
     var i = 0;
-    var interval = setInterval(async () => {
+    while (i < frames.length) {
       const frameText = `\`\`\`\n${frames[i++]}\nframe: ${i} out of ${frames.length}\n\`\`\``;
-      await interaction.editReply(frameText);
-      if (i >= frames.length) clearInterval(interval);
-    }, frametime);
+      interaction.editReply(frameText);
+      setTimeout(frametime);
+    }
   } catch (err) {
     log.warn(err);
     await interaction.editReply({
