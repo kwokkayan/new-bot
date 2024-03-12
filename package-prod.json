@@ -1,5 +1,6 @@
 {
   "scripts": {
+    "gen-parser": "antlr4 -Dlanguage=JavaScript -o /usr/app/new-bot/src/parser -listener -visitor -Xexact-output-dir /usr/app/new-bot/src/grammar/arith.g4",
     "dev": "node index.js | pino-pretty"
   },
   "type": "module",
