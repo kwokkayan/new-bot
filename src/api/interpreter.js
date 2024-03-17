@@ -67,7 +67,10 @@ class Visitor extends arithVisitor {
    */
   // Visit a parse tree produced by arithParser#assfStmt.
   visitAssfStmt(ctx) {
-    return this.visitChildren(ctx);
+    const left = ctx.getChild(0).getText();
+    const right = this.visit(ctx.right);
+    memory.set(left, right);
+    return right;
   }
 
   /**
@@ -77,7 +80,7 @@ class Visitor extends arithVisitor {
    */
   // Visit a parse tree produced by arithParser#unAssStmt.
   visitUnAssStmt(ctx) {
-    return this.visitChildren(ctx);
+    return { value: memory.delete(ctx.getChild(1).getText()) + 0, type: "num" };
   }
 
   /**
@@ -137,10 +140,14 @@ class Visitor extends arithVisitor {
    */
   // Visit a parse tree produced by arithParser#opExpr.
   visitBOpExpr(ctx) {
-    const left = this.visit(ctx.left);
-    const right = this.visit(ctx.right);
+    var left = this.visit(ctx.left);
+    var right = this.visit(ctx.right);
     const op = ctx.getChild(1).getText();
-    // TODO: add matrix operations
+    if (left.type !== "num" || right.type !== "num") {
+      throw new Error(`type error: ${left.type} ${op} ${right.type}`)
+    }
+    left = left.value;
+    right = right.value;
     let out = { value: null, type: "num" }
     switch (op) {
       case '*': out.value = left * right; break;
@@ -167,8 +174,12 @@ class Visitor extends arithVisitor {
    */
   // Visit a parse tree produced by arithParser#uOpExpr.
   visitUOpExpr(ctx) {
-    const left = this.visit(ctx.expr());
+    var left = this.visit(ctx.expr());
     const op = ctx.getChild(0).getText();
+    if (left.type !== "num") {
+      throw new Error(`type error: ${op}${left.type}`)
+    }
+    left = left.value;
     let out = { value: null, type: "num" }
     switch (op) {
       case '!': out.value = (!left) + 0; break;
@@ -223,14 +234,14 @@ class Visitor extends arithVisitor {
     const one = ctx.o;
     const mul = ctx.mul;
     if (zeroOrOne === null && one === null) {
-      return [];
+      return { value: [], type: "arr" };
     } else if (one === null) {
       const { value } = this.visit(zeroOrOne);
-      return [value];
+      return { value: [value], type: "arr" };
     } else {
       const fst = this.visit(one);
       const snd = this.visit(mul);
-      return [fst.value].concat(snd.value);
+      return { value: [fst.value].concat(snd.value), type: "arr" };
     }
   }
 
@@ -241,7 +252,7 @@ class Visitor extends arithVisitor {
    */
   // Visit a parse tree produced by arithParser#atomInt.
   visitAtomInt(ctx) {
-    return parseInt(ctx.getText());
+    return { value: parseInt(ctx.getText()), type: "num" };
   }
 
   /**
@@ -251,7 +262,7 @@ class Visitor extends arithVisitor {
    */
   // Visit a parse tree produced by arithParser#atomFloat.
   visitAtomFloat(ctx) {
-    return parseFloat(ctx.getText());
+    return { value: parseFloat(ctx.getText()), type: "num" };
   }
 
   /**

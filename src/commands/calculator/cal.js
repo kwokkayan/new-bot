@@ -11,5 +11,5 @@ export const data = new SlashCommandBuilder()
   );
 export async function execute(interaction) {
   const out = interpret(interaction.options.getString("expression"));
-  await interaction.reply(`${out}`);
+  await interaction.reply(`\`\`\`\n${out}\n\`\`\``);
 }
