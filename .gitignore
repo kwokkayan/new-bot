@@ -6,3 +6,4 @@ src/parser
 src/grammar/.antlr
 .vscode
 dist
+*.mp4

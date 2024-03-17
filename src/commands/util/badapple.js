@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from 'discord.js';
-import { getFrameBuffersFromVideo } from '../../api/badapple.js';
+import { getFrameBuffersFromVideo, getAsciiVideo } from '../../api/badapple.js';
 import { log } from '../../config.js';
 import {
   setTimeout,
@@ -13,41 +13,54 @@ export const data = new SlashCommandBuilder()
     .setDescription("url for badapple")
     .setRequired(true)
   )
-  .addStringOption(opt => opt
+  .addIntegerOption(opt => opt
     .setName("framerate")
     .setDescription("fps for badapple")
     .setRequired(false)
   )
-  .addStringOption(opt => opt
+  .addIntegerOption(opt => opt
     .setName("width")
     .setDescription("width for frame (16:9 enforced with height)")
     .setRequired(false)
   )
-  .addStringOption(opt => opt
+  .addIntegerOption(opt => opt
     .setName("frametime")
     .setDescription("dt between each frame in ms")
+    .setRequired(false)
+  ).addBooleanOption(opt => opt
+    .setName("video")
+    .setDescription("convert to video?")
     .setRequired(false)
   )
 export async function execute(interaction) {
   await interaction.deferReply();
   try {
-    var fps = interaction.options.getString("framerate") ?? 4;
-    var width = interaction.options.getString("width") ?? 57;
-    var frametime = interaction.options.getString("frametime") ?? 1000;
-    fps = parseInt(fps);
-    width = parseInt(width);
-    frametime = parseInt(frametime);
-    const height = Math.floor(width * 9 / 16)
-    if (width * height > 1950) {
-      throw new Error("Width too high");
-    }
     const url = interaction.options.getString("url");
-    const frames = await getFrameBuffersFromVideo(url, fps, width, height);
-    var i = 0;
-    while (i < frames.length) {
-      const frameText = `\`\`\`\n${frames[i++]}\nframe: ${i} out of ${frames.length}\n\`\`\``;
-      interaction.editReply(frameText);
-      setTimeout(frametime);
+    const fps = interaction.options.getInteger("framerate") ?? 4;
+    const width = interaction.options.getInteger("width") ?? 57;
+    const frametime = interaction.options.getInteger("frametime") ?? 1000;
+    const video = interaction.options.getBoolean("video") ?? false;
+    const height = Math.floor(width * 9 / 16)
+    if (!video) { // text display
+      if (width * height > 1950) {
+        throw new Error("Width too high");
+      }
+      const frames = await getFrameBuffersFromVideo(url, fps, width, height);
+      var i = 0;
+      while (i < frames.length) {
+        const frameText = `\`\`\`\n${frames[i++]}\nframe: ${i} out of ${frames.length}\n\`\`\``;
+        interaction.editReply(frameText);
+        setTimeout(frametime);
+      }
+    } else { //generate video
+      const fileName = await getAsciiVideo(url, fps, width, height);
+      await interaction.editReply({
+        files: [{
+          attachment: fileName,
+          name: "output.mp4",
+          description: "output file"
+        }]
+      });
     }
   } catch (err) {
     log.warn(err);

@@ -2,7 +2,8 @@ import { spawn } from 'node:child_process';
 import { createVideoStream } from "./youtube.js";
 import { log } from '../config.js';
 import sharp from 'sharp';
-import { Writable } from 'node:stream';
+import { Readable, Writable } from 'node:stream';
+import { createWriteStream } from 'node:fs';
 
 export const getFrameBuffersFromVideo = async (url, fps, width, height) => {
   const videoStream = await createVideoStream(url);
@@ -77,4 +78,59 @@ export const getFrameBuffersFromVideo = async (url, fps, width, height) => {
     })
   });
 
+}
+
+export const getAsciiVideo = async (url, fps, width, height) => {
+  const frames = await getFrameBuffersFromVideo(url, fps, width, height);
+  const imgBuffers = await Promise.all(frames.map((f) =>
+    sharp({
+      text: {
+        text: `<span background="black" foreground="white">${f}</span>`,
+        rgba: true,
+        width: width * 8,
+        height: height * 8,
+        font: "Courier",
+      }
+    })
+      .png()
+      .toBuffer()
+  ))
+  return new Promise((resolve, reject) => {
+    const imgStream = Readable.from(imgBuffers.reduce((acc, curr) => Buffer.concat([acc, curr]), Buffer.from([])))
+    const ffmpeg = spawn('ffmpeg', [
+      '-framerate',
+      `${fps}`,
+      '-f',
+      'image2pipe',
+      '-i',
+      'pipe:0',
+      '-c:v',
+      'copy',
+      '-f',
+      'mp4',
+      '-movflags',
+      'isml+frag_keyframe',
+      '-r',
+      `${fps}`,
+      'pipe:1',
+    ]);
+    imgStream.pipe(ffmpeg.stdin);
+
+    ffmpeg.stderr.on("data", (data) => {
+      log.error(`${data.toString()}`)
+    })
+
+    ffmpeg.stdout.pipe(createWriteStream('temp.mp4'));
+
+    ffmpeg.on("exit", (code) => {
+      if (code == 0)
+        resolve("temp.mp4");
+      else
+        reject("");
+    });
+
+    ffmpeg.on('error', () => {
+      reject("");
+    })
+  });
 }
