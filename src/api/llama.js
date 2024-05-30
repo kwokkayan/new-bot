@@ -5,7 +5,7 @@ import {LlamaModel, LlamaContext, LlamaChatSession, ChatPromptWrapper} from "nod
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const model = new LlamaModel({
-    modelPath: path.join(__dirname, "models", "ggml-model-q4_0.gguf")
+    modelPath: path.join(__dirname, "models", "llama-2-7b-chat.Q2_K.gguf")
 });
 
 class MyCustomChatPromptWrapper extends ChatPromptWrapper {

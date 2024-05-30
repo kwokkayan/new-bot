@@ -1,7 +1,7 @@
 import { SlashCommandBuilder } from 'discord.js';
 import { joinVoiceChannel, demuxProbe, createAudioResource } from '@discordjs/voice';
 import { getAudioPlayerByGuildId } from "../../api/player.js";
-import { createAudioStream, getAudioInfo } from "../../api/youtube.js";
+import { createAudioStream, getAudioInfo, scrapePlaylist } from "../../api/youtube.js";
 import { getPlayerEmbed } from "../../embeds/player.js";
 import { getQueueCardEmbed } from "../../embeds/queueCard.js";
 import { log } from "../../config.js";
@@ -21,41 +21,51 @@ export const data = new SlashCommandBuilder()
   );
 export async function execute(interaction) {
   try {
+    await interaction.deferReply();
     // Fetch youtube stream and metadata
     const user = interaction.member;
     if (user.voice.channelId === null) {
       throw new Error("User is not connected to voice channel");
     }
-    const url = interaction.options.getString("url");
-    const audio = await getAudioInfo(url);
-    const stream = await createAudioStream(url);
-    if (audio === undefined || stream === undefined) {
-      throw new Error("Invalid url");
-    }
-    // Join vc
-    const connection = joinVoiceChannel({
-      channelId: user.voice.channelId,
-      guildId: user.guild.id,
-      adapterCreator: user.guild.voiceAdapterCreator
-    });
-    // Set audio resource
-    const resource = await probeAndCreateResource(stream);
+    const ytUrl = interaction.options.getString("url");
+    // process playlist...
+    const playlist = await scrapePlaylist(ytUrl);
     const player = getAudioPlayerByGuildId(user.guild.id);
-    // store audio info, stream resource, and text channel for output
-    player.queue.push({ audio, resource, channel: interaction.channel });
+    const emptyQueue = player.queue.length == 0
+    let audioCards = [];
+    for (const url of playlist) {
+      const audio = await getAudioInfo(url);
+      const stream = await createAudioStream(url);
+      if (audio === undefined || stream === undefined) {
+        throw new Error("Invalid url");
+      }
+      audioCards.push(audio);
+      // Set audio resource
+      const resource = await probeAndCreateResource(stream);
+      // store audio info, stream resource, and text channel for output
+      player.queue.push({ audio, resource, channel: interaction.channel });
+    }
     let embed = undefined;
-    if (player.queue.length == 1) {
+    if (emptyQueue) {
+      const {audio, resource} = player.queue[0];
+      // Join vc
+      const connection = joinVoiceChannel({
+        channelId: user.voice.channelId,
+        guildId: user.guild.id,
+        adapterCreator: user.guild.voiceAdapterCreator
+      });
       player.play(resource);
       connection.subscribe(player);
       embed = { embeds: [getPlayerEmbed(audio)] };
     } else {
-      embed = { embeds: [getQueueCardEmbed(audio)] };
+      const embeds = audioCards.slice(0, 10).map((audio) => getQueueCardEmbed(audio))
+      embed = { embeds };
     }
     // send reply
-    await interaction.reply(embed);
+    await interaction.editReply(embed);
   } catch (err) {
     log.warn(err);
-    await interaction.reply({
+    await interaction.editReply({
       content: `Error: ${err.message}`,
       ephemeral: true
     });

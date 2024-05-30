@@ -1,6 +1,7 @@
 {
   "scripts": {
     "type": "tsc",
+    "gen-parser": "antlr4 -Dlanguage=JavaScript -o ./src/parser -listener -visitor -Xexact-output-dir ./src/grammar/arith.g4",
     "dev": "nodemon index.js | pino-pretty"
   },
   "type": "module",
@@ -11,6 +12,7 @@
     "discord.js": "^14.14.1",
     "dotenv": "^16.4.5",
     "ffmpeg-static": "^5.2.0",
+    "googleapis": "^137.1.0",
     "libsodium-wrappers": "^0.7.13",
     "node-llama-cpp": "^2.8.8",
     "opusscript": "^0.0.8",
