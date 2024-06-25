@@ -1,15 +1,9 @@
 import { SlashCommandBuilder } from 'discord.js';
-import { joinVoiceChannel, demuxProbe, createAudioResource } from '@discordjs/voice';
-import { getAudioPlayerByGuildId } from "../../api/player.js";
+import { joinVoiceChannel } from '@discordjs/voice';
+import { getAudioPlayerByGuildId, probeAndCreateResource } from "../../api/player.js";
 import { createAudioStream, getAudioInfo, scrapePlaylist } from "../../api/youtube.js";
 import { getPlayerEmbed } from "../../embeds/player.js";
 import { getQueueCardEmbed } from "../../embeds/queueCard.js";
-import { log } from "../../config.js";
-
-async function probeAndCreateResource(readableStream) {
-  const { stream, type } = await demuxProbe(readableStream);
-  return createAudioResource(stream, { inputType: type });
-}
 
 export const data = new SlashCommandBuilder()
   .setName('play')

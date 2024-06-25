@@ -1,6 +1,5 @@
-import { createAudioPlayer, NoSubscriberBehavior, AudioPlayerStatus } from '@discordjs/voice';
+import { createAudioPlayer, NoSubscriberBehavior, AudioPlayerStatus, demuxProbe, createAudioResource } from '@discordjs/voice';
 import { Collection } from 'discord.js';
-import { log } from "../config.js";
 import { getPlayerEmbed } from "../embeds/player.js";
 const players = new Collection();
 
@@ -36,4 +35,9 @@ export const getAudioPlayerByGuildId = (id) => {
 
   players.set(id, player);
   return player
+}
+
+export async function probeAndCreateResource(readableStream) {
+  const { stream, type } = await demuxProbe(readableStream);
+  return createAudioResource(stream, { inputType: type });
 }
