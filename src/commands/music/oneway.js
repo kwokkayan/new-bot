@@ -1,8 +1,9 @@
 import { SlashCommandBuilder } from 'discord.js';
-import { joinVoiceChannel, AudioPlayerStatus } from '@discordjs/voice';
+import { joinVoiceChannel } from '@discordjs/voice';
 import { getStationAudio, getCurrentPlayingInfo } from '../../api/oneway.js';
 import { getAudioPlayerByGuildId, probeAndCreateResource } from '../../api/player.js';
 import { getOneWayPlayerEmbed } from '../../embeds/onewayPlayer.js';
+import { log } from '../../config.js';
 
 const updatePrompt = async (guildId, channel) => {
   const player = getAudioPlayerByGuildId(guildId);

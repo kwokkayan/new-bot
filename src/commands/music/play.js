@@ -4,6 +4,7 @@ import { getAudioPlayerByGuildId, probeAndCreateResource } from "../../api/playe
 import { createAudioStream, getAudioInfo, scrapePlaylist } from "../../api/youtube.js";
 import { getPlayerEmbed } from "../../embeds/player.js";
 import { getQueueCardEmbed } from "../../embeds/queueCard.js";
+import { log } from '../../config.js';
 
 export const data = new SlashCommandBuilder()
   .setName('play')
