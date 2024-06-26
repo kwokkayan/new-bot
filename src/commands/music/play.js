@@ -55,6 +55,7 @@ export async function execute(interaction) {
       const embeds = audioCards.slice(0, 10).map((audio) => getQueueCardEmbed(audio))
       embed = { embeds };
     }
+    player.playingOneway = false;
     // send reply
     await interaction.editReply(embed);
   } catch (err) {

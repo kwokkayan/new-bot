@@ -6,7 +6,7 @@ import { getOneWayPlayerEmbed } from '../../embeds/onewayPlayer.js';
 
 const updatePrompt = async (guildId, channel) => {
   const player = getAudioPlayerByGuildId(guildId);
-  if (player.queue.length === 0 && player.state === AudioPlayerStatus.Playing) {
+  if (player.queue.length === 0 && player.playingOneway) {
     const current = await getCurrentPlayingInfo();
     channel.send({
       embeds: [getOneWayPlayerEmbed(current)]
@@ -34,6 +34,7 @@ export async function execute(interaction) {
       const player = getAudioPlayerByGuildId(guildId);
       // clear the queue
       player.queue = [];
+      player.playingOneway = true;
       player.play(resource);
       connection.subscribe(player);
       const current = await getCurrentPlayingInfo();

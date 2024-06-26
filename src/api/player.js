@@ -1,6 +1,7 @@
 import { createAudioPlayer, NoSubscriberBehavior, AudioPlayerStatus, demuxProbe, createAudioResource } from '@discordjs/voice';
 import { Collection } from 'discord.js';
 import { getPlayerEmbed } from "../embeds/player.js";
+import { log } from '../config.js';
 const players = new Collection();
 
 export const getAudioPlayerByGuildId = (id) => {

@@ -15,6 +15,7 @@ export async function execute(interaction) {
     player.queue = [];
     player.stop();
     connection.destroy();
+    player.playingOneway = false;
     await interaction.reply(`Music stopped.`);
   } catch (err) {
     await interaction.reply({

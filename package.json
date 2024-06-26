@@ -2,7 +2,8 @@
   "scripts": {
     "type": "tsc",
     "gen-parser": "antlr4 -Dlanguage=JavaScript -o ./src/parser -listener -visitor -Xexact-output-dir ./src/grammar/arith.g4",
-    "dev": "nodemon index.js | pino-pretty"
+    "dev": "nodemon index.js | pino-pretty",
+    "prod": "node index.js"
   },
   "type": "module",
   "dependencies": {
